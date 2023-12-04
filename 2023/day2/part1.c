@@ -5,65 +5,93 @@
 
 #define MAX_LINE_LENGTH 256
 
-typedef struct {
-  char* string;
-  size_t len;
-} Buffer;
-
 bool is_digit(char c) {
   return c >= '0' && c <= '9';
 }
 
-char* move_past_gameid(char* cp) {
-  if (cp) {
-    while (*cp != ':') {
-      cp++;
-    }
-    cp++; // Move past :
-  }
-  return cp;
+char* advance_past_gameid(char* linp) {
+  while (*linp != ':') ++linp;
+  ++linp;
+  return linp;
 }
+
+int get_next_draw(char* linp, char* drawbuf) {
+  char* drawp = drawbuf;
+  int drawlen = 0;
+  while (*linp != ';' && *linp != '\n') {
+    *drawp++ = *linp++;
+    ++drawlen;
+  }
+  /* Add one to go past ; */
+  return drawlen;
+}
+
+
 
 int main(int argc, char **argv) {
-  FILE* input;
-  input = fopen("input.txt", "r");
+  FILE* input = fopen("input.txt", "r");
 
-  char buffer[MAX_LINE_LENGTH];
-  char* cp;
-  char current_draw[MAX_LINE_LENGTH];
-  char* drawp; 
+  char lbuf[MAX_LINE_LENGTH];
+  char* linp = lbuf;
+
+  char drawbuf[MAX_LINE_LENGTH];
+  int drawlen;
 
   int reds = 0;
-  int blues = 0;
   int greens = 0;
+  int blues = 0;
 
-  char digits[3];
+  if (fgets(lbuf, sizeof lbuf, input)) {
+    linp = advance_past_gameid(linp);
+    printf("%s\n", lbuf);
 
-  int digit_count = 0;
+    while ((drawlen = get_next_draw(linp, drawbuf) != 0)) {
+      printf("%s\n", drawbuf);
+      while (!is_digit(*linp)) ++linp;
 
-  Buffer draw_buffer;
-  int i = 0;
+      char digitbuf[MAX_LINE_LENGTH];
+      char* dp = digitbuf;
 
-  while (fgets(buffer, sizeof(buffer), input) != NULL) {
-    cp = buffer;
-    printf("%s\n", buffer);
-    cp = move_past_gameid(cp);
+      while (is_digit(*linp)) {
+        *dp++ = *linp++;
+      }
+      *dp = '\0'; 
 
-    for (; 
-    while (*cp != ';' && *cp != '\n' && *cp != '\0') {
-      draw_buffer.string[i++] = *cp;
-      cp++;
+      int number = atoi(digitbuf);
+      
+      char colorbuf[MAX_LINE_LENGTH];
+      char* cp = colorbuf;
+
+      while (*linp != ',' && *linp != ';') {
+        if (*linp == ' ') {
+          linp++; 
+          continue;
+        }
+        *cp++ = *linp++;
+      }
+      *cp = '\0';
+
+      if (strcmp(colorbuf, "red")) reds += number;
+      if (strcmp(colorbuf, "green")) greens += number;
+      if (strcmp(colorbuf, "blue")) blues += number;
+
+      //printf("%d, %d, %d\n", reds, greens, blues);
+
+      linp += drawlen - 1;
+     // printf("%c\n", *linp);
+
     }
-    draw_buffer.string[i] = '\0';
-    draw_buffer.len = i;
 
-    printf("%s\n", draw_buffer.string);
-    break;
-    
-
+    //linp += drawlen;
 
   }
-  fclose(input);
+
+  //printf("%s\n", drawbuf);
+  //printf("%d\n", drawlen);
+  //printf("%c\n", *linp);
+  
+
   return EXIT_SUCCESS;
 }
+
 
