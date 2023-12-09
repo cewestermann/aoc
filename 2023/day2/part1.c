@@ -3,95 +3,128 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define MAX_LINE_LENGTH 256
+#define _CRT_SECURE_NO_WARNINGS 1
 
-bool is_digit(char c) {
-  return c >= '0' && c <= '9';
-}
+#define MAX_LINE 256
+#define MAX_DRAW 64
 
-char* advance_past_gameid(char* linp) {
-  while (*linp != ':') ++linp;
-  ++linp;
-  return linp;
-}
+#define MAX_RED 12
+#define MAX_GREEN 13
+#define MAX_BLUE 14
 
-int get_next_draw(char* linp, char* drawbuf) {
-  char* drawp = drawbuf;
-  int drawlen = 0;
-  while (*linp != ';' && *linp != '\n') {
-    *drawp++ = *linp++;
-    ++drawlen;
-  }
-  /* Add one to go past ; */
-  return drawlen;
-}
+static int get_gameid(void);
+static int get_draw(void);
+static bool is_digit(char c);
+static void print_ids(void);
+static int sum_ids(void);
 
-
+static char draw[MAX_DRAW];
+static char game[MAX_LINE];
+static char* gp = game;
+static int possible_ids[100];
+int idp = 0;
 
 int main(int argc, char **argv) {
   FILE* input = fopen("input.txt", "r");
 
-  char lbuf[MAX_LINE_LENGTH];
-  char* linp = lbuf;
+  bool impossible = false;
 
-  char drawbuf[MAX_LINE_LENGTH];
-  int drawlen;
+  while (fgets(game, sizeof game, input)) {
+    printf("%s\n", game);
+    int gameid = get_gameid();
+    printf("%d\n", gameid);
 
-  int reds = 0;
-  int greens = 0;
-  int blues = 0;
+    int res;
+    int num;
+    char type[10];
 
-  if (fgets(lbuf, sizeof lbuf, input)) {
-    linp = advance_past_gameid(linp);
-    printf("%s\n", lbuf);
+    while ((res = get_draw()) != 0) {
+      int num;
+      char type[10];
 
-    while ((drawlen = get_next_draw(linp, drawbuf) != 0)) {
-      printf("%s\n", drawbuf);
-      while (!is_digit(*linp)) ++linp;
+      sscanf(draw, "%d %s", &num, type);
+      gp++;
+      printf("%s, %d\n", type, num);
 
-      char digitbuf[MAX_LINE_LENGTH];
-      char* dp = digitbuf;
-
-      while (is_digit(*linp)) {
-        *dp++ = *linp++;
+      if ((!strcmp(type, "red") && num > MAX_RED) ||
+          (!strcmp(type, "green") && num > MAX_GREEN) ||
+          (!strcmp(type, "blue") && num > MAX_BLUE)) {
+        impossible = true;
+        break;
       }
-      *dp = '\0'; 
-
-      int number = atoi(digitbuf);
-      
-      char colorbuf[MAX_LINE_LENGTH];
-      char* cp = colorbuf;
-
-      while (*linp != ',' && *linp != ';') {
-        if (*linp == ' ') {
-          linp++; 
-          continue;
-        }
-        *cp++ = *linp++;
-      }
-      *cp = '\0';
-
-      if (strcmp(colorbuf, "red")) reds += number;
-      if (strcmp(colorbuf, "green")) greens += number;
-      if (strcmp(colorbuf, "blue")) blues += number;
-
-      //printf("%d, %d, %d\n", reds, greens, blues);
-
-      linp += drawlen - 1;
-     // printf("%c\n", *linp);
-
     }
 
-    //linp += drawlen;
+    if (!impossible) {
+      if (!res) {
+        sscanf(draw, "%d %s", &num, type);
+        gp++;
+        if ((!strcmp(type, "red") && num > MAX_RED) ||
+            (!strcmp(type, "green") && num > MAX_GREEN) ||
+            (!strcmp(type, "blue") && num > MAX_BLUE)) {
+          impossible = true;
+        }
+      }
+    }
 
+    if (!impossible) {
+      possible_ids[idp++] = gameid;
+    }
+    gp = game;
+    impossible = false;
   }
-
-  //printf("%s\n", drawbuf);
-  //printf("%d\n", drawlen);
-  //printf("%c\n", *linp);
-  
-
-  return EXIT_SUCCESS;
+  int sum = sum_ids();
+  printf("%d\n", sum);
+  fclose(input);
 }
 
+static void print_ids(void) {
+  for (int i = 0; i <= idp; i++) {
+    printf("%d\n", possible_ids[i]);
+  }
+}
+
+static int sum_ids(void) {
+  int sum = 0;
+  for (int i = 0; i < idp; i++) {
+    sum += possible_ids[i];
+  }
+  return sum;
+}
+
+static int get_gameid(void) {
+  char gameid[4];
+  char* gid = gameid;
+
+  while (*gp != ':') {
+    if (is_digit(*gp))
+      *gid++ = *gp;
+      gp++;
+      while (is_digit(*gp)) {
+        *gid++ = *gp++;
+      }
+  }
+  *gid = '\0';
+
+  gp++; // Move past :
+  return atoi(gameid);
+}
+
+static int get_draw(void) {
+  char *p = draw;
+
+  while (*gp != ',' && *gp != ';' && *gp != '\n') {
+    *p++ = *gp++;
+  }
+  *p = '\0';
+
+  if (*gp == '\n' || *gp == '\0') {
+    return 0;
+  } else {
+    return 1;
+  }
+}
+
+static bool is_digit(char c) {
+  return c >= '0' && c <= '9';
+}
 
