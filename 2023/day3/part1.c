@@ -7,6 +7,8 @@
 #define MAX_LINES 256
 #define MAX_CHAR 512
 
+bool IS_LAST = false;
+
 typedef struct {
   char lines[MAX_LINES][MAX_CHAR];
   size_t n_lines;
@@ -20,7 +22,7 @@ typedef struct {
 } LineWindow;
 
 Data read_data(char* filename);
-int next_window(Data* data, LineWindow* lw);
+void next_window(Data* data, LineWindow* lw);
 
 Data read_data(char* filename) {
   FILE* input = fopen(filename, "r");
@@ -35,7 +37,7 @@ Data read_data(char* filename) {
   return data;
 }
 
-int next_window(Data* data, LineWindow* lw) {
+void next_window(Data* data, LineWindow* lw) {
   if (!data->center_idx) {
     lw->previous = 0;
   } else {
@@ -44,29 +46,27 @@ int next_window(Data* data, LineWindow* lw) {
   lw->center = data->lines[data->center_idx];
   if (data->center_idx == data->n_lines) {
     lw->next = 0;
+    IS_LAST = true;
   } else {
     lw->next = data->lines[data->center_idx + 1];
   }
-  return 1;
 }
 
 int main(int argc, char** argv) {
   Data data = read_data("input.txt");
   LineWindow lw = {0};
-  next_window(&data, &lw);
-  data.center_idx++;
-
-  char* cp = lw.center;
-
-  char digit[4];
-  char* dp = digit;
-
-  int lineidx = 0;
-  int prior;
 
   int part_sum = 0;
 
-  while (next_window(&data, &lw)) {
+  for (;;) {
+    next_window(&data, &lw);
+    char* cp = lw.center;
+    char digit[4];
+    char* dp = digit;
+    int prior;
+    int lineidx = 0;
+
+    data.center_idx++;
     while (*cp != '\0') {
       if (isdigit(*cp)) {
         prior = lineidx;
@@ -93,8 +93,12 @@ int main(int argc, char** argv) {
   
         if (is_bad) continue;
   
-        if (lw.center[before] != '.' || lw.center[after] != '.') {
+        if (lw.center[before] != '.') {
           printf("Before: %c\n", lw.center[before]);
+          continue;
+        }
+
+        if (lw.center[after] != '.') {
           printf("After: %c\n", lw.center[after]);
           continue;
         }
@@ -116,9 +120,10 @@ int main(int argc, char** argv) {
       lineidx++;
       dp = digit;
     }
+    if (IS_LAST) break;
   }
 
-  printf("%d\n", part_sum); // 1226
+  printf("%d\n", part_sum);
 
   printf("%s\n", lw.previous);
   printf("%s\n", lw.center);
