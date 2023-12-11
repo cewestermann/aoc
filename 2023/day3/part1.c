@@ -66,6 +66,7 @@ int main(int argc, char** argv) {
     int prior;
     int lineidx = 0;
 
+
     data.center_idx++;
     while (*cp != '\0') {
       if (isdigit(*cp)) {
@@ -124,10 +125,6 @@ int main(int argc, char** argv) {
   }
 
   printf("%d\n", part_sum);
-
-  printf("%s\n", lw.previous);
-  printf("%s\n", lw.center);
-  printf("%s\n", lw.next);
 
   return EXIT_SUCCESS;
 }
