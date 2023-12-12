@@ -88,7 +88,6 @@ int calculate_power(int colors[]) {
   return power;
 }
 
-
 int get_next_game(FILE* input, Game* game) {
   char data[MAX_LINE];
   char* dp;
