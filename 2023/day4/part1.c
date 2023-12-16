@@ -1,20 +1,18 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <stdint.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #define MAX_LINE 512
 
 typedef uint8_t u8;
 typedef uint64_t u64;
-
-typedef struct {
-  int winning_numbers[10];
-  int hand[25];
-  int card_number;
-} Card;
 
 typedef struct {
   size_t size;
@@ -23,12 +21,10 @@ typedef struct {
 
 static Buffer read_entire_file(char* filename);
 static Buffer* split_on(Buffer* buffer, char delimiter, size_t *count);
+static void free_buffers(Buffer* buffers, size_t count);
 
 int main(int argc, char** argv) {
   Buffer buffer = read_entire_file("input.txt");
-
-  Card cards[204];
-  size_t cidx = 0;
 
   size_t count = 0;
   Buffer* buffers = split_on(&buffer, '\n', &count);
@@ -72,8 +68,11 @@ int main(int argc, char** argv) {
       }
     }
     total_points += points;
+    free_buffers(linebuffers, linecount);
+    free_buffers(left, coloncount);
   }
   printf("%d\n", total_points);
+  free_buffers(buffers, count);
   return EXIT_SUCCESS;
 }
 
@@ -100,14 +99,14 @@ static Buffer read_entire_file(char* filename) {
   FILE* file = fopen(filename, "rb");
 
 #if _WIN32
-  struct __stat64 stat;
-  _stat64(filename, &stat);
+  struct __stat64 Stat;
+  _stat64(filename, &Stat);
 #else
-  struct stat stat__;
-  stat(filename, &stat__);
+  struct stat Stat;
+  stat(filename, &Stat);
 #endif
 
-  result = allocate_buffer(stat__.st_size);
+  result = allocate_buffer(Stat.st_size);
   if (result.data) {
     if (fread(result.data, result.size, 1, file) != 1) {
       fprintf(stderr, "ERROR: Unable to read \"%s\".\n", filename);
