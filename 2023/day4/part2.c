@@ -9,6 +9,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#define ERROR_ALLOCATE(msg) fprintf(stderr, "ERROR: Unable to allocate %s.\n", msg)
+
 typedef uint8_t u8;
 typedef uint64_t u64;
 
@@ -39,15 +41,15 @@ int main(int argc, char** argv) {
 
 static u64 process_cards(Buffer* cards, u64 n_cards) {
   if (!n_cards) return 0;
+  Buffer card = cards[0];
+  u64 wins = get_wins(card);
 
-  for (size_t i = 0; i < n_cards; i++) {
-    int n_new_cards = get_wins(cards[i]);
-    Buffer* new_cards = malloc(sizeof(Buffer) * n_new_cards);
+  for 
 
-    for (size_t j = 0; j < n_new_cards; j++) {
-      new_cards[j] = allocate_buffer(cards[(i + j) + 1].size);
-    }
-  }
+
+
+
+
 }
 
 static int get_wins(Buffer card) {
