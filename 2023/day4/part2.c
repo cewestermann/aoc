@@ -1,5 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -46,14 +44,9 @@ int main(int argc, char** argv) {
 static u64 process_cards(Buffer* cards) {
   /* The number of original cards */
   u64 n_cards = (u64)cards->size;
-
   assert(n_cards > 0);
-
   for (size_t i = 0; i < cards->size; i++) {
-
   }
-
-
 }
 
 static u64 process_cards2(Buffer* cards, u64 n_cards) {
@@ -106,7 +99,7 @@ static Buffer allocate_buffer(size_t size) {
   if (result.data)
     result.size = size;
   else
-   fprintf(stderr, "ERROR: Unable to allocate %zu bytes.\n", size);
+    ERROR_ALLOCATE("%zu bytes");
   return result;
 }
 
