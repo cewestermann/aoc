@@ -32,6 +32,15 @@ int main(int argc, char** argv) {
 
   printf("%s\n", input.data);
 
+  u32 n_lines = 0; 
+
+  for (size_t i = 0; i < input.size; i++) {
+    if (input.data[i] == '\n')
+      n_lines++;
+  }
+
+  Buffer* linebuffers = malloc(n_lines * sizeof(Buffer));
+
   return EXIT_SUCCESS;
 }
 
