@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <stdint.h>
+#include <assert.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -19,12 +20,15 @@ typedef struct {
   u8* data;
 } Buffer;
 
+typedef Buffer Cards;
+
 static Buffer read_entire_file(char* filename);
 static Buffer* split_on(Buffer* buffer, char delimiter, size_t *count);
 static void free_buffers(Buffer* buffers, size_t count);
 
 static int get_wins(Buffer card);
-static u64 process_cards(Buffer* cards, u64 n_cards);
+static u64 process_cards(Buffer* cards);
+static u64 process_cards2(Buffer* cards, u64 n_cards);
 
 int main(int argc, char** argv) {
   Buffer buffer = read_entire_file("input.txt");
@@ -39,16 +43,21 @@ int main(int argc, char** argv) {
   return EXIT_SUCCESS;
 }
 
-static u64 process_cards(Buffer* cards, u64 n_cards) {
+static u64 process_cards(Buffer* cards) {
+  /* The number of original cards */
+  u64 n_cards = (u64)cards->size;
+
+  assert(n_cards > 0);
+
+  for (size_t i = 0; i < cards->size; i++) {
+
+  }
+
+
+}
+
+static u64 process_cards2(Buffer* cards, u64 n_cards) {
   if (!n_cards) return 0;
-  Buffer card = cards[0];
-  u64 wins = get_wins(card);
-
-  for 
-
-
-
-
 
 }
 
