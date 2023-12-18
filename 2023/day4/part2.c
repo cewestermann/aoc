@@ -45,7 +45,10 @@ static u64 process_cards(Buffer* cards) {
   /* The number of original cards */
   u64 n_cards = (u64)cards->size;
   assert(n_cards > 0);
+
   for (size_t i = 0; i < cards->size; i++) {
+    Buffer card = cards[i];
+    int wins = get_wins(card);
   }
 }
 
