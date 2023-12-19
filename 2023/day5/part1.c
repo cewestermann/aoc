@@ -9,9 +9,16 @@ typedef uint32_t u32;
 typedef uint64_t u64;
 
 typedef struct {
-  u64 destination_start;
-  u64 source_start;
-  u64 range;
+  size_t size;
+  u8* data;
+} Buffer;
+
+typedef Buffer String;
+
+typedef struct {
+  String destination_start;
+  String source_start;
+  String range;
 } MapEntry;
 
 typedef struct {
@@ -19,31 +26,39 @@ typedef struct {
   u32 len;
 } Map;
 
-typedef struct {
-  size_t size;
-  u8* data;
-} Buffer;
-
 static Buffer allocate_buffer(size_t size);
 static void free_buffer(Buffer* buffer);
 static Buffer read_entire_file(char* filename);
 static Buffer* buffer_get_lines(Buffer* buffer);
 static void buffer_print(Buffer* buffer);
+static void tokenize(char* buffer, u8* dst);
 
 int main(int argc, char** argv) {
   Buffer input = read_entire_file("input.txt");
 
-  printf("%s\n", input.data);
+  //printf("%s\n", input.data);
 
   Buffer* line_buffers = buffer_get_lines(&input);
 
-  for (size_t i = 0; i < line_buffers->size; i++) {
-    if (strchr((char*)line_buffers[i].data, ':')) {
+  char* pch;
 
+  u8* seeds[50];
+  int count = 0;
 
-    }
+  u8* token;
+  
+  token = (u8*)strtok((char*)line_buffers[0].data, " ");
+
+  while (token != NULL) {
+    seeds[count++] = token;
+    token = (u8*)strtok(NULL, " ");
   }
-  buffer_print(line_buffers);
+
+  for (size_t i = 0; i < count; i++) {
+    printf("%s\n", seeds[i]);
+  }
+
+  //buffer_print(line_buffers);
 
   for (size_t i = 0; i < line_buffers->size; i++) {
     free_buffer(&line_buffers[i]);
@@ -127,6 +142,20 @@ static Buffer* buffer_get_lines(Buffer* buffer) {
 static void buffer_print(Buffer* buffer) {
   for (size_t i = 0; i < buffer->size; i++) {
     printf("%s\n", buffer[i].data);
+  }
+}
+
+static void tokenize(char* str, u8* dst) {
+  u8* seeds[50];
+  int count = 0;
+
+  u8* token;
+  
+  token = (u8*)strtok((char*)str, " ");
+
+  while (token != NULL) {
+    seeds[count++] = token;
+    token = (u8*)strtok(NULL, " ");
   }
 }
 
