@@ -16,6 +16,11 @@ typedef struct {
 typedef Buffer String;
 
 typedef struct {
+  size_t count;
+  u8** tokens;
+} TokenBuffer;
+
+typedef struct {
   String destination_start;
   String source_start;
   String range;
@@ -31,7 +36,8 @@ static void free_buffer(Buffer* buffer);
 static Buffer read_entire_file(char* filename);
 static Buffer* buffer_get_lines(Buffer* buffer);
 static void buffer_print(Buffer* buffer);
-static void tokenize(char* buffer, u8* dst);
+static TokenBuffer tokenize(char* buffer, size_t maxlen, char* delim);
+static void populate_map(Map* map, Buffer* linebuffers, int start_idx);
 
 int main(int argc, char** argv) {
   Buffer input = read_entire_file("input.txt");
@@ -40,23 +46,18 @@ int main(int argc, char** argv) {
 
   Buffer* line_buffers = buffer_get_lines(&input);
 
-  char* pch;
+  char* delim = strchr((char*)line_buffers[0].data, ':');
+  delim++;
 
-  u8* seeds[50];
-  int count = 0;
+  TokenBuffer seeds = tokenize(delim, 50, " ");
+  printf("%zu\n", seeds.count);
 
-  u8* token;
-  
-  token = (u8*)strtok((char*)line_buffers[0].data, " ");
-
-  while (token != NULL) {
-    seeds[count++] = token;
-    token = (u8*)strtok(NULL, " ");
+  for (size_t i = 0; i < seeds.count; i++) {
+    printf("%s\n", seeds.tokens[i]);
   }
 
-  for (size_t i = 0; i < count; i++) {
-    printf("%s\n", seeds[i]);
-  }
+  Map seeds2soil = {0};
+  populate_map(&seeds2soil, line_buffers, 3);
 
   //buffer_print(line_buffers);
 
@@ -145,17 +146,47 @@ static void buffer_print(Buffer* buffer) {
   }
 }
 
-static void tokenize(char* str, u8* dst) {
-  u8* seeds[50];
+static TokenBuffer tokenize(char* str, size_t maxlen, char* delim) {
+  TokenBuffer tb = {0};
+  u8** tokens = malloc(maxlen * sizeof(u8*));
   int count = 0;
 
   u8* token;
   
-  token = (u8*)strtok((char*)str, " ");
+  token = (u8*)strtok((char*)str, delim);
 
   while (token != NULL) {
-    seeds[count++] = token;
-    token = (u8*)strtok(NULL, " ");
+    tokens[count++] = token;
+    token = (u8*)strtok(NULL, delim);
+  }
+
+  tb.count = count;
+  tb.tokens = tokens;
+
+  return tb;
+}
+
+static void populate_map(Map* map, Buffer* linebuffers, int start_idx) {
+  size_t n_entries = 0;
+  size_t end_point;
+  for (size_t i = start_idx; i < linebuffers->size; i++) {
+    if (linebuffers[i].data[0] == '\0') {
+      end_point = i;
+      break;
+    }
+
+    n_entries++;
+  }
+
+  MapEntry* entries = malloc(n_entries * sizeof(MapEntry));
+  TokenBuffer tokens;
+
+  for (size_t i = start_idx; i < end_point; i++) {
+    tokens = tokenize((char*)&linebuffers->data[i], 4, " ");
+  }
+
+  for (size_t i = 0; i < tokens.count; i++) {
+    printf("%s\n", tokens.tokens[i]);
   }
 }
 
