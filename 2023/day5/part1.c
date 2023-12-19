@@ -40,16 +40,9 @@ int main(int argc, char** argv) {
   for (size_t i = 0; i < line_buffers->size; i++) {
     if (strchr((char*)line_buffers[i].data, ':')) {
 
+
     }
-
-
-
   }
-
-
-
-
-
   buffer_print(line_buffers);
 
   for (size_t i = 0; i < line_buffers->size; i++) {
