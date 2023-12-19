@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <sys/stat.h>
+#include <string.h>
 
 typedef uint8_t u8;
 typedef uint32_t u32;
@@ -26,20 +27,23 @@ typedef struct {
 static Buffer allocate_buffer(size_t size);
 static void free_buffer(Buffer* buffer);
 static Buffer read_entire_file(char* filename);
+static Buffer* buffer_get_lines(Buffer* buffer);
+static void buffer_print(Buffer* buffer);
 
 int main(int argc, char** argv) {
   Buffer input = read_entire_file("input.txt");
 
   printf("%s\n", input.data);
 
-  u32 n_lines = 0; 
+  Buffer* line_buffers = buffer_get_lines(&input);
 
-  for (size_t i = 0; i < input.size; i++) {
-    if (input.data[i] == '\n')
-      n_lines++;
+  buffer_print(line_buffers);
+
+  for (size_t i = 0; i < line_buffers->size; i++) {
+    free_buffer(&line_buffers[i]);
   }
 
-  Buffer* linebuffers = malloc(n_lines * sizeof(Buffer));
+  free_buffer(&input);
 
   return EXIT_SUCCESS;
 }
@@ -85,5 +89,38 @@ static Buffer read_entire_file(char* filename) {
     fprintf(stderr, "ERROR: Unable to open \"%s\".\n", filename);
   }
   return result;
+}
+
+static Buffer* buffer_get_lines(Buffer* buffer) {
+  u32 n_lines = 0; 
+
+  for (size_t i = 0; i < buffer->size; i++) {
+    if (buffer->data[i] == '\n')
+      n_lines++;
+  }
+
+  Buffer* linebuffers = malloc(n_lines * sizeof(Buffer));
+
+  size_t start = 0;
+  size_t line_idx = 0;
+
+  for (size_t i = 0; i < buffer->size; i++) {
+    if (buffer->data[i] == '\n' || i == (buffer->size - 1)) {
+      size_t linelength = i - start;
+      linebuffers[line_idx] = allocate_buffer(linelength);
+
+      memcpy(linebuffers[line_idx].data, &buffer->data[start], linelength);
+
+      start = i + 1;
+      line_idx++;
+    }
+  }
+  return linebuffers;
+}
+
+static void buffer_print(Buffer* buffer) {
+  for (size_t i = 0; i < buffer->size; i++) {
+    printf("%s\n", buffer[i].data);
+  }
 }
 
