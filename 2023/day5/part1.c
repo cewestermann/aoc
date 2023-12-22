@@ -8,6 +8,8 @@ typedef uint8_t u8;
 typedef uint32_t u32;
 typedef uint64_t u64;
 
+typedef int32_t i32;
+
 typedef struct {
   size_t size;
   u8* data;
@@ -159,7 +161,6 @@ static TokenBuffer tokenize(char* str, size_t maxlen, char* delim) {
     tokens[count++] = token;
     token = (u8*)strtok(NULL, delim);
   }
-
   tb.count = count;
   tb.tokens = tokens;
 
@@ -174,7 +175,6 @@ static void populate_map(Map* map, Buffer* linebuffers, int start_idx) {
       end_point = i;
       break;
     }
-
     n_entries++;
   }
 
@@ -182,11 +182,10 @@ static void populate_map(Map* map, Buffer* linebuffers, int start_idx) {
   TokenBuffer tokens;
 
   for (size_t i = start_idx; i < end_point; i++) {
-    tokens = tokenize((char*)&linebuffers->data[i], 4, " ");
+    tokens = tokenize(&linebuffers->data[i], 4, " ");
   }
 
   for (size_t i = 0; i < tokens.count; i++) {
     printf("%s\n", tokens.tokens[i]);
   }
 }
-
