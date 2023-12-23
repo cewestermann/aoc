@@ -4,8 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-typedef int32_t i32;
+#include <sys/stat.h>
 
 // Declarations
 typedef struct {
@@ -15,6 +14,8 @@ typedef struct {
 
 String string_allocate(size_t size);
 String string_from_literal(char const* literal);
+String read_entire_file(char const* filename);
+void string_free(String* s);
 
 typedef struct {
   size_t len;
@@ -22,11 +23,12 @@ typedef struct {
 } Strings;
 
 Strings string_split_on(String s, char const delim);
+void strings_free(Strings* s);
 
 // Definitions
 String string_allocate(size_t size) {
   String s = {0};
-  s.data = (char const*)malloc(size);
+  s.data = malloc(size);
   if (s.data) {
     s.len = size;
   } else {
@@ -66,7 +68,7 @@ Strings string_split_on(String s, char const delim) {
   size_t substr_idx = 0;
 
   for (size_t i = 0; i < s.len; i++) {
-    if (i == s.len || s.data[i] == delim) {
+    if (s.data[i] == delim) {
       size_t substr_len = i - start_idx;
       buffer.data[substr_idx] = string_allocate(substr_len);
       memcpy(buffer.data[substr_idx].data, s.data + start_idx, substr_len);
@@ -75,7 +77,34 @@ Strings string_split_on(String s, char const delim) {
       substr_idx++;
     }
   }
+  // Last substring
+  size_t substr_len = s.len - start_idx;
+  buffer.data[substr_idx] = string_allocate(substr_len);
+  memcpy(buffer.data[substr_idx].data, s.data + start_idx, substr_len);
   return buffer;
+}
+
+String read_entire_file(char const* filename) {
+  String s = {0};
+  FILE* file = fopen(filename, "r");
+#if _WIN32
+  struct __stat64 Stat;
+  _stat64(filename, &Stat);
+#else
+  struct stat Stat;
+  stat(filename, &Stat);
+#endif
+  s = string_allocate(Stat.st_size);
+  if (s.data) {
+    if (fread(s.data, s.len, 1, file) != 1) {
+      fprintf(stderr, "ERROR: Unable to read \"%s\".\n", filename);
+      string_free(&s);
+    }
+    fclose(file);
+  } else {
+    fprintf(stderr, "ERROR: Unable to open \"%s\".\n", filename);
+  }
+  return s;
 }
 
 void string_free(String* s) {
@@ -89,7 +118,7 @@ void string_free(String* s) {
 void strings_free(Strings* s) {
   if (s->data) {
     for (size_t i = 0; i < s->len; i++) {
-      string_free(s->data[i]);
+      string_free(&s->data[i]);
   }
   free(s->data);
   s->data = 0;

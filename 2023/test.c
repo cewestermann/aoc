@@ -9,7 +9,11 @@ int main(int argc, char** argv) {
 
   Strings strings = string_split_on(string, '.');
 
-  printf("%zu\n", strings.len);
+  for (size_t i = 0; i < strings.len; i++) {
+    printf("%s\n", strings.data[i].data);
+  }
+
+  strings_free(&strings);
 
   return EXIT_SUCCESS;
 }
