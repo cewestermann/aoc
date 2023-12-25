@@ -23,7 +23,6 @@ bool is_digit(char const c);
 void print_perimiter(PartNumber num, LineWindow* lw);
 void print__single(PartNumber num, i32 len, String s);
 
-
 int main(int argc, char** argv) {
   String input = read_entire_file("input.txt");
   Strings lines = string_split_on(input, '\n');
@@ -61,8 +60,25 @@ int main(int argc, char** argv) {
     }
 
     for (size_t i = 0; i < pcount; i++) {
+      i32 len = numbers[i].end - numbers[i].start;
+
+      if ((numbers[i].end + 1) > lw.center.len)  {
+        printf("END OF LINE\n");
+      }
+
+      if (numbers[i].start == 0) {
+        printf("BEGINNING OF LINE\n");
+      }
+
+      printf("%d\n", len);
+    }
+
+#if 0
+    for (size_t i = 0; i < pcount; i++) {
       print_perimiter(numbers[i], &lw);
     }
+#endif
+
   }
   return EXIT_SUCCESS;
 }
